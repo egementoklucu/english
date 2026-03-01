@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Next Gen Study App</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@300;400&display=swap');
+
+        /* SIFIRLAMA VE TEMEL AYARLAR */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #050505;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            font-family: 'Roboto', sans-serif;
+            perspective: 1200px; /* 3D derinlik algısı */
+        }
+
+        /* ARKA PLAN DÜNYA EFEKTİ */
+        #network-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at center, #1a1a2e 0%, #000000 100%);
+        }
+
+        /* 3D KART KAPLAYICISI */
+        .card-wrapper {
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease-out; /* Pürüzsüz tilt */
+        }
+
+        /* TELEFON GÖVDESİ */
+        .phone-card {
+            width: 360px;
+            height: 640px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 40px;
+            border: 2px solid rgba(0, 243, 255, 0.3);
+            backdrop-filter: blur(20px); /* Buzlu cam */
+            box-shadow: 
+                0 0 40px rgba(0, 243, 255, 0.15),
+                inset 0 0 20px rgba(0, 243, 255, 0.05);
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* HOLOGRAM IŞIK HÜZMESİ (EN HAVALI KISIM) */
+        .hologram-beam {
+            position: absolute;
+            top: -150px; /* Kartın üstüne taşar */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 300px;
+            background: linear-gradient(to bottom, rgba(0, 243, 255, 0), rgba(0, 243, 255, 0.4));
+            clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
+            z-index: 10;
+            pointer-events: none;
+            animation: hologram-flicker 4s infinite;
+            mix-blend-mode: screen;
+        }
+
+        /* YÜZEN 3D OBJE (KİTAP İKONU) */
+        .floating-obj {
+            position: absolute;
+            top: 60px;
+            font-size: 80px;
+            filter: drop-shadow(0 0 20px #00f3ff);
+            animation: float 3s ease-in-out infinite;
+            z-index: 20;
+        }
+
+        /* İÇERİK METİNLERİ */
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            color: #fff;
+            font-size: 34px;
+            margin-top: 140px; /* İkonun altına */
+            text-transform: uppercase;
+            text-shadow: 0 0 10px #00f3ff;
+            letter-spacing: 2px;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #00f3ff;
+            font-size: 12px;
+            letter-spacing: 4px;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+        }
+
+        .desc-box {
+            background: rgba(0, 0, 0, 0.5);
+            border-left: 3px solid #bc13fe; /* Mor çizgi */
+            padding: 20px;
+            color: #ddd;
+            font-size: 15px;
+            line-height: 1.6;
+            border-radius: 0 10px 10px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transform: translateZ(30px); /* 3D Öne çıkar */
+        }
+
+        /* BUTON */
+        .connect-btn {
+            margin-top: auto;
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(90deg, #00f3ff, #bc13fe);
+            border: none;
+            border-radius: 30px;
+            color: #fff;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(188, 19, 254, 0.5);
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+
+        .connect-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 40px rgba(0, 243, 255, 0.8);
+        }
+
+        /* ANİMASYONLAR */
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotateY(0deg); }
+            50% { transform: translateY(-20px) rotateY(180deg); }
+        }
+
+        @keyframes hologram-flicker {
+            0%, 100% { opacity: 0.5; height: 300px; }
+            5% { opacity: 0.2; height: 280px; }
+            10% { opacity: 0.5; height: 300px; }
+            50% { opacity: 0.7; filter: hue-rotate(20deg); }
+            55% { opacity: 0.3; }
+        }
+
+        /* PARTİKÜL EFEKTİ İÇİN STİL */
+        .particle {
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- ARKA PLAN AĞI -->
+    <canvas id="network-canvas"></canvas>
+
+    <!-- 3D HAREKET ALANI -->
+    <div class="card-wrapper" id="card">
+        
+        <!-- TELEFON GÖVDESİ -->
+        <div class="phone-card">
+            
+            <!-- HOLOGRAM IŞIĞI -->
+            <div class="hologram-beam"></div>
+
+            <!-- UÇAN İKON (KİTAP/DÜNYA) -->
+            <div class="floating-obj">🌐</div>
+
+            <!-- BAŞLIK -->
+            <h1>Study<span style="color:#bc13fe">Verse</span></h1>
+            <div class="subtitle">Global Student Network</div>
+
+            <!-- AÇIKLAMA -->
+            <div class="desc-box">
+                <strong style="color:#00f3ff; display:block; margin-bottom:5px;">Revolutionary Feature:</strong>
+                <span id="type-text"></span><span style="animation:blink 1s infinite">|</span>
+            </div>
+
+            <!-- PUAN -->
+            <div style="margin-top: 20px; color: #ffd700; font-size: 22px; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);">
+                ★★★★★
+            </div>
+
+            <!-- BUTON -->
+            <button class="connect-btn">Start Hologram</button>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. DAKTİLO EFEKTİ (İNGİLİZCE METİN) ---
+        const textToType = "Connect with any student in the world instantly. The app projects a 3D HOLOGRAM of your study partner into your room. Share notes and study together as if you are side-by-side.";
+        const typeContainer = document.getElementById('type-text');
+        let charIndex = 0;
+
+        function typeWriter() {
+            if (charIndex < textToType.length) {
+                typeContainer.innerHTML += textToType.charAt(charIndex);
+                charIndex++;
+                setTimeout(typeWriter, 35);
+            }
+        }
+        setTimeout(typeWriter, 500);
+
+        // --- 2. 3D TILT EFEKTİ (MOUSE HAREKETİ) ---
+        const cardWrapper = document.getElementById('card');
+        document.addEventListener('mousemove', (e) => {
+            const x = (window.innerWidth / 2 - e.pageX) / 20; // Dönüş hassasiyeti
+            const y = (window.innerHeight / 2 - e.pageY) / 20;
+            cardWrapper.style.transform = `rotateY(${x}deg) rotateX(${y}deg)`;
+        });
+
+        // --- 3. ARKA PLAN AĞ EFEKTİ (CANVAS) ---
+        const canvas = document.getElementById('network-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const particles = [];
+        const particleCount = 70; // Nokta sayısı
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.size = Math.random() * 2;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if(this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if(this.y < 0 || this.y > canvas.height) this.vy *= -1;
+            }
+            draw() {
+                ctx.fillStyle = 'rgba(0, 243, 255, 0.7)';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // Noktaları oluştur
+        for(let i=0; i<particleCount; i++) particles.push(new Particle());
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            for(let i=0; i<particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+
+                // Çizgi çiz (Bağlantı)
+                for(let j=i; j<particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+
+                    if(dist < 150) {
+                        ctx.strokeStyle = `rgba(188, 19, 254, ${1 - dist/150})`; // Mor bağlantılar
+                        ctx.lineWidth = 0.5;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // Ekran boyutu değişirse
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
