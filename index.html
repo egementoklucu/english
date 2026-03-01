@@ -3,233 +3,255 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Next Gen Study App</title>
+    <title>StudySpace Project</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@300;400&display=swap');
-
-        /* SIFIRLAMA VE TEMEL AYARLAR */
+        /* TEMEL AYARLAR */
         body {
             margin: 0;
             padding: 0;
-            background-color: #050505;
+            background: #0f172a; /* Koyu Lacivert Premium Arka Plan */
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            font-family: 'Inter', sans-serif;
             overflow: hidden;
-            font-family: 'Roboto', sans-serif;
-            perspective: 1200px; /* 3D derinlik algısı */
+            perspective: 1000px;
         }
 
-        /* ARKA PLAN DÜNYA EFEKTİ */
-        #network-canvas {
+        /* ARKA PLAN CANLI AĞ */
+        canvas {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             z-index: -1;
-            background: radial-gradient(circle at center, #1a1a2e 0%, #000000 100%);
+            background: radial-gradient(circle at 50% 50%, #1e293b 0%, #0f172a 100%);
         }
 
-        /* 3D KART KAPLAYICISI */
-        .card-wrapper {
-            position: relative;
-            transform-style: preserve-3d;
-            transition: transform 0.1s ease-out; /* Pürüzsüz tilt */
-        }
-
-        /* TELEFON GÖVDESİ */
-        .phone-card {
+        /* KART TASARIMI */
+        .card {
             width: 360px;
-            height: 640px;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 40px;
-            border: 2px solid rgba(0, 243, 255, 0.3);
-            backdrop-filter: blur(20px); /* Buzlu cam */
-            box-shadow: 
-                0 0 40px rgba(0, 243, 255, 0.15),
-                inset 0 0 20px rgba(0, 243, 255, 0.05);
+            height: 600px;
+            background: rgba(255, 255, 255, 0.05); /* Şeffaf */
+            backdrop-filter: blur(15px); /* Buzlu Cam */
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
             padding: 30px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            color: white;
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease-out;
             position: relative;
-            overflow: hidden;
         }
 
-        /* HOLOGRAM IŞIK HÜZMESİ (EN HAVALI KISIM) */
-        .hologram-beam {
+        /* RADAR / ARAMA ANİMASYONU */
+        .radar-container {
+            width: 120px;
+            height: 120px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .radar-circle {
             position: absolute;
-            top: -150px; /* Kartın üstüne taşar */
-            left: 50%;
-            transform: translateX(-50%);
-            width: 200px;
-            height: 300px;
-            background: linear-gradient(to bottom, rgba(0, 243, 255, 0), rgba(0, 243, 255, 0.4));
-            clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
-            z-index: 10;
-            pointer-events: none;
-            animation: hologram-flicker 4s infinite;
-            mix-blend-mode: screen;
+            border: 2px solid rgba(56, 189, 248, 0.3); /* Açık Mavi */
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
         }
 
-        /* YÜZEN 3D OBJE (KİTAP İKONU) */
-        .floating-obj {
-            position: absolute;
-            top: 60px;
-            font-size: 80px;
-            filter: drop-shadow(0 0 20px #00f3ff);
-            animation: float 3s ease-in-out infinite;
-            z-index: 20;
+        .c1 { width: 100%; height: 100%; animation: pulse 2s infinite; }
+        .c2 { width: 70%; height: 70%; animation: pulse 2s infinite 0.5s; }
+        .c3 { width: 40%; height: 40%; background: #38bdf8; box-shadow: 0 0 20px #38bdf8; }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(1.5); opacity: 0; }
         }
 
-        /* İÇERİK METİNLERİ */
+        /* BAŞLIKLAR */
         h1 {
-            font-family: 'Orbitron', sans-serif;
-            color: #fff;
-            font-size: 34px;
-            margin-top: 140px; /* İkonun altına */
-            text-transform: uppercase;
-            text-shadow: 0 0 10px #00f3ff;
-            letter-spacing: 2px;
-            text-align: center;
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin: 0;
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .subtitle {
-            color: #00f3ff;
-            font-size: 12px;
-            letter-spacing: 4px;
+            font-size: 13px;
+            color: #94a3b8;
             margin-bottom: 30px;
-            text-transform: uppercase;
+            font-weight: 400;
         }
 
-        .desc-box {
-            background: rgba(0, 0, 0, 0.5);
-            border-left: 3px solid #bc13fe; /* Mor çizgi */
+        /* METİN KUTUSU */
+        .description-box {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 15px;
             padding: 20px;
-            color: #ddd;
-            font-size: 15px;
+            width: 100%;
+            box-sizing: border-box;
+            border: 1px solid rgba(255,255,255,0.05);
+            min-height: 140px;
+            font-size: 14px;
             line-height: 1.6;
-            border-radius: 0 10px 10px 0;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            transform: translateZ(30px); /* 3D Öne çıkar */
+            color: #cbd5e1;
+            margin-bottom: 20px;
+        }
+
+        .highlight {
+            color: #38bdf8;
+            font-weight: 600;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 2px;
+            height: 16px;
+            background: #38bdf8;
+            animation: blink 1s infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* ÖZELLİK ETİKETLERİ */
+        .features {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tag {
+            background: rgba(56, 189, 248, 0.1);
+            color: #38bdf8;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            border: 1px solid rgba(56, 189, 248, 0.2);
         }
 
         /* BUTON */
-        .connect-btn {
-            margin-top: auto;
+        .btn {
             width: 100%;
-            padding: 18px;
-            background: linear-gradient(90deg, #00f3ff, #bc13fe);
+            padding: 16px;
+            border-radius: 12px;
             border: none;
-            border-radius: 30px;
-            color: #fff;
-            font-family: 'Orbitron', sans-serif;
-            font-weight: bold;
+            background: #38bdf8;
+            color: #0f172a;
+            font-weight: 700;
             font-size: 16px;
             cursor: pointer;
-            box-shadow: 0 0 20px rgba(188, 19, 254, 0.5);
             transition: 0.3s;
-            text-transform: uppercase;
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
         }
 
-        .connect-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 40px rgba(0, 243, 255, 0.8);
+        .btn:hover {
+            background: #7dd3fc;
+            box-shadow: 0 0 30px rgba(56, 189, 248, 0.6);
+            transform: translateY(-2px);
         }
 
-        /* ANİMASYONLAR */
-        @keyframes float {
-            0%, 100% { transform: translateY(0) rotateY(0deg); }
-            50% { transform: translateY(-20px) rotateY(180deg); }
-        }
-
-        @keyframes hologram-flicker {
-            0%, 100% { opacity: 0.5; height: 300px; }
-            5% { opacity: 0.2; height: 280px; }
-            10% { opacity: 0.5; height: 300px; }
-            50% { opacity: 0.7; filter: hue-rotate(20deg); }
-            55% { opacity: 0.3; }
-        }
-
-        /* PARTİKÜL EFEKTİ İÇİN STİL */
-        .particle {
-            position: absolute;
-            background: #fff;
-            border-radius: 50%;
+        .rating {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #fbbf24; /* Sarı */
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
     </style>
 </head>
 <body>
 
-    <!-- ARKA PLAN AĞI -->
-    <canvas id="network-canvas"></canvas>
+    <!-- ARKA PLAN EFEKTİ -->
+    <canvas id="bg-canvas"></canvas>
 
-    <!-- 3D HAREKET ALANI -->
-    <div class="card-wrapper" id="card">
+    <!-- ANA KART -->
+    <div class="card" id="tilt-card">
         
-        <!-- TELEFON GÖVDESİ -->
-        <div class="phone-card">
-            
-            <!-- HOLOGRAM IŞIĞI -->
-            <div class="hologram-beam"></div>
-
-            <!-- UÇAN İKON (KİTAP/DÜNYA) -->
-            <div class="floating-obj">🌐</div>
-
-            <!-- BAŞLIK -->
-            <h1>Study<span style="color:#bc13fe">Verse</span></h1>
-            <div class="subtitle">Global Student Network</div>
-
-            <!-- AÇIKLAMA -->
-            <div class="desc-box">
-                <strong style="color:#00f3ff; display:block; margin-bottom:5px;">Revolutionary Feature:</strong>
-                <span id="type-text"></span><span style="animation:blink 1s infinite">|</span>
-            </div>
-
-            <!-- PUAN -->
-            <div style="margin-top: 20px; color: #ffd700; font-size: 22px; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);">
-                ★★★★★
-            </div>
-
-            <!-- BUTON -->
-            <button class="connect-btn">Start Hologram</button>
+        <!-- RADAR İKONU -->
+        <div class="radar-container">
+            <div class="radar-circle c1"></div>
+            <div class="radar-circle c2"></div>
+            <div class="radar-circle c3"></div>
         </div>
+
+        <!-- BAŞLIK -->
+        <h1>StudySpace</h1>
+        <div class="subtitle">Global Virtual Library</div>
+
+        <!-- ÖZELLİK ETİKETLERİ -->
+        <div class="features">
+            <span class="tag">Video Call</span>
+            <span class="tag">Whiteboard</span>
+            <span class="tag">Global</span>
+        </div>
+
+        <!-- AÇIKLAMA (YAZI EFEKTİ BURADA) -->
+        <div class="description-box">
+            <span id="text-target"></span><span class="cursor"></span>
+        </div>
+
+        <!-- BUTON -->
+        <button class="btn">Find Study Partner</button>
+
+        <!-- PUAN -->
+        <div class="rating">
+            ★★★★★ <span>(4.9/5)</span>
+        </div>
+
     </div>
 
     <script>
-        // --- 1. DAKTİLO EFEKTİ (İNGİLİZCE METİN) ---
-        const textToType = "Connect with any student in the world instantly. The app projects a 3D HOLOGRAM of your study partner into your room. Share notes and study together as if you are side-by-side.";
-        const typeContainer = document.getElementById('type-text');
-        let charIndex = 0;
+        // --- 1. YAZI EFEKTİ (TYPEWRITER) ---
+        // Buradaki İngilizce tamamen gerçekçi
+        const text = "Function: This app is a 24/7 virtual library. It matches you with a study partner from anywhere in the world. You can study together via video call, share screens, and solve homework problems instantly.";
+        const target = document.getElementById('text-target');
+        let i = 0;
 
         function typeWriter() {
-            if (charIndex < textToType.length) {
-                typeContainer.innerHTML += textToType.charAt(charIndex);
-                charIndex++;
-                setTimeout(typeWriter, 35);
+            if (i < text.length) {
+                target.innerHTML += text.charAt(i);
+                i++;
+                setTimeout(typeWriter, 30); // Yazma hızı
             }
         }
-        setTimeout(typeWriter, 500);
+        // Sayfa yüklenince başlat
+        setTimeout(typeWriter, 800);
+
 
         // --- 2. 3D TILT EFEKTİ (MOUSE HAREKETİ) ---
-        const cardWrapper = document.getElementById('card');
+        const card = document.getElementById('tilt-card');
         document.addEventListener('mousemove', (e) => {
-            const x = (window.innerWidth / 2 - e.pageX) / 20; // Dönüş hassasiyeti
-            const y = (window.innerHeight / 2 - e.pageY) / 20;
-            cardWrapper.style.transform = `rotateY(${x}deg) rotateX(${y}deg)`;
+            const x = (window.innerWidth / 2 - e.pageX) / 25;
+            const y = (window.innerHeight / 2 - e.pageY) / 25;
+            card.style.transform = `rotateY(${x}deg) rotateX(${y}deg)`;
         });
 
+
         // --- 3. ARKA PLAN AĞ EFEKTİ (CANVAS) ---
-        const canvas = document.getElementById('network-canvas');
+        const canvas = document.getElementById('bg-canvas');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        const particles = [];
-        const particleCount = 70; // Nokta sayısı
+        let particles = [];
+        const particleCount = 50;
 
         class Particle {
             constructor() {
@@ -237,44 +259,42 @@
                 this.y = Math.random() * canvas.height;
                 this.vx = (Math.random() - 0.5) * 0.5;
                 this.vy = (Math.random() - 0.5) * 0.5;
-                this.size = Math.random() * 2;
+                this.size = Math.random() * 2 + 1;
             }
             update() {
                 this.x += this.vx;
                 this.y += this.vy;
-                if(this.x < 0 || this.x > canvas.width) this.vx *= -1;
-                if(this.y < 0 || this.y > canvas.height) this.vy *= -1;
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
             }
             draw() {
-                ctx.fillStyle = 'rgba(0, 243, 255, 0.7)';
+                ctx.fillStyle = 'rgba(56, 189, 248, 0.5)'; // Mavi noktalar
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                 ctx.fill();
             }
         }
 
-        // Noktaları oluştur
-        for(let i=0; i<particleCount; i++) particles.push(new Particle());
+        for (let j = 0; j < particleCount; j++) {
+            particles.push(new Particle());
+        }
 
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            for(let i=0; i<particles.length; i++) {
-                particles[i].update();
-                particles[i].draw();
-
-                // Çizgi çiz (Bağlantı)
-                for(let j=i; j<particles.length; j++) {
-                    const dx = particles[i].x - particles[j].x;
-                    const dy = particles[i].y - particles[j].y;
-                    const dist = Math.sqrt(dx*dx + dy*dy);
-
-                    if(dist < 150) {
-                        ctx.strokeStyle = `rgba(188, 19, 254, ${1 - dist/150})`; // Mor bağlantılar
-                        ctx.lineWidth = 0.5;
+            for (let j = 0; j < particles.length; j++) {
+                particles[j].update();
+                particles[j].draw();
+                // Bağlantı çizgileri
+                for (let k = j; k < particles.length; k++) {
+                    const dx = particles[j].x - particles[k].x;
+                    const dy = particles[j].y - particles[k].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 150) {
+                        ctx.strokeStyle = `rgba(56, 189, 248, ${0.15 - dist/1000})`;
+                        ctx.lineWidth = 1;
                         ctx.beginPath();
-                        ctx.moveTo(particles[i].x, particles[i].y);
-                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.moveTo(particles[j].x, particles[j].y);
+                        ctx.lineTo(particles[k].x, particles[k].y);
                         ctx.stroke();
                     }
                 }
@@ -283,11 +303,11 @@
         }
         animate();
 
-        // Ekran boyutu değişirse
         window.addEventListener('resize', () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
         });
+
     </script>
 </body>
 </html>
